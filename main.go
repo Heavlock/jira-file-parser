@@ -29,8 +29,10 @@ func main() {
 	myWindow := myApp.NewWindow("File Chooser Example")
 	myWindow.Resize(fyne.NewSize(600, 400))
 	var filePath string
+	var filterFilePath string
 	// Create a label to display the selected file path
-	filePathLabel := widget.NewLabel("Здесь будет полнуть путь к выбранному файлу: ")
+	filePathLabel := widget.NewLabel("файл для парсинга: ")
+	fileFilterPathLabel := widget.NewLabel("файл фильтр: ")
 	textResult := &widget.TextGrid{}
 	//downloadButton := widget.NewButton("Скачать результат", func() {
 	//	//showDialog(myWindow, filePathLabel, &filePath)
@@ -47,9 +49,12 @@ func main() {
 	chooseFileButton := widget.NewButton("Выбрать Файл", func() {
 		showDialog(myWindow, filePathLabel, &filePath)
 	})
+	chooseFilterFileButton := widget.NewButton("Выбрать Файл Фильтр", func() {
+		showDialog(myWindow, fileFilterPathLabel, &filterFilePath)
+	})
 
 	parseFileButton := widget.NewButton("Обработать файл", func() {
-		res, err := fileParser.ParseFile(filePath)
+		res, err := fileParser.ParseFile(filePath, filterFilePath)
 		if err != nil {
 			textResult.SetText(err.Error())
 		} else {
@@ -62,10 +67,12 @@ func main() {
 	// Set up the layout
 	content := container.NewVBox(
 		filePathLabel,
+		fileFilterPathLabel,
 		linkToDownload,
 		layout.NewSpacer(),
 		//downloadContainer,
 		chooseFileButton,
+		chooseFilterFileButton,
 		parseFileButton,
 	)
 
@@ -90,7 +97,7 @@ func showDialog(window fyne.Window, label *widget.Label, filePath *string) {
 		fileURL := file.URI().String()
 
 		*filePath = strings.TrimPrefix(fileURL, "file://")
-		label.SetText(*filePath)
+		label.SetText(label.Text + *filePath)
 		err = file.Close()
 		if err != nil {
 			fmt.Println(err.Error())

@@ -39,6 +39,7 @@ var qaFieldName = "Custom field (QA)"
 var storyPointFieldName = "Custom field (Story Points)"
 var assigneeFieldName = "Assignee"
 var issueTypeFieldName = "Issue Type"
+var issueKeyFieldName = "Issue key"
 var taskTitle = "Summary"
 
 var titleNames = []string{
@@ -48,6 +49,7 @@ var titleNames = []string{
 	statusFieldName,
 	issueTypeFieldName,
 	taskTitle,
+	issueKeyFieldName,
 }
 var taskStatusesToAdd = []string{
 	"Публикация",
@@ -55,7 +57,7 @@ var taskStatusesToAdd = []string{
 	"Приёмка ПОСЛЕ публикации",
 }
 
-func ParseFile(filePath string) (map[string]*Stat, error) {
+func ParseFile(filePath string, filterFilePath string) (map[string]*Stat, error) {
 	var statMap = make(map[string]*Stat)
 
 	file, err := os.Open(filePath)
@@ -64,7 +66,6 @@ func ParseFile(filePath string) (map[string]*Stat, error) {
 		return statMap, err
 	}
 	defer file.Close()
-
 	reader := csv.NewReader(bufio.NewReader(file))
 
 	res := &result{
@@ -82,13 +83,67 @@ func ParseFile(filePath string) (map[string]*Stat, error) {
 		if err != nil {
 			break
 		}
-
 		setResData(res, record)
+	}
+
+	if filterFilePath != "" {
+		filter, err := collectFilterTask(filterFilePath)
+		if err == nil && len(filter) > 0 {
+			filterTaskInRes(res, filter)
+		}
 	}
 
 	collectQAStat(res, statMap)
 	collectDevelopersStat(res, statMap)
 	return statMap, nil
+}
+func filterTaskInRes(res *result, taskToFilter map[string]bool) {
+	var filteredData []map[int]string
+	for _, val := range res.data {
+		taskKey := val[res.titles[issueKeyFieldName]]
+		if taskToFilter[taskKey] {
+			continue
+		}
+		filteredData = append(filteredData, val)
+	}
+	res.data = filteredData
+}
+
+func collectFilterTask(filterFilePath string) (map[string]bool, error) {
+	var taskNumberField int
+	var isAssigned bool
+	var tasks = make(map[string]bool)
+	file, err := os.Open(filterFilePath)
+	if err != nil {
+		return tasks, err
+	}
+	defer file.Close()
+
+	reader := csv.NewReader(bufio.NewReader(file))
+
+	record, err := reader.Read()
+	for ind, key := range record {
+		if key == issueKeyFieldName {
+			taskNumberField = ind
+			isAssigned = true
+			break
+		}
+	}
+	if !isAssigned {
+		return tasks, nil
+	}
+
+	for {
+		record, err = reader.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			break
+		}
+		tasks[record[taskNumberField]] = true
+	}
+	return tasks, nil
 }
 
 func collectQAStat(res *result, statMap map[string]*Stat) {
