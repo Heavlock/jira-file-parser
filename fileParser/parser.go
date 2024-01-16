@@ -3,6 +3,7 @@ package fileParser
 import (
 	"bufio"
 	"encoding/csv"
+	"fmt"
 	"io"
 	"os"
 	"strconv"
@@ -76,17 +77,16 @@ func ParseFile(filePath string, filterFilePath string) (map[string]*Stat, error)
 	// парсим csv
 	record, err := reader.Read()
 	findTitle(res, record, titleNames)
+	var taskHandleCount = 1
 	for {
 		record, err = reader.Read()
-		if err == io.EOF {
-			break
-		}
 		if err != nil {
 			break
 		}
+		taskHandleCount++
 		setResData(res, record)
 	}
-
+	fmt.Printf("Количество обработанных задач %d", taskHandleCount)
 	if filterFilePath != "" {
 		filter, err := collectFilterTask(filterFilePath)
 		if err == nil && len(filter) > 0 {
@@ -198,11 +198,11 @@ func collectStat(res *result, employeeType string, statMap map[string]*Stat) {
 			}
 
 			//считаем количество маленьких, больших и средних задач
-			if storyPoints >= 5 {
-				statMap[val[fieldNameNumber]].MiddleTaskCount++
-			} else if storyPoints >= 10 {
+			if storyPoints >= 10 {
 				statMap[val[fieldNameNumber]].BigTaskCount++
 				statMap[val[fieldNameNumber]].TaskTitles = append(statMap[val[fieldNameNumber]].TaskTitles, val[taskTitleFieldNumber])
+			} else if storyPoints >= 5 {
+				statMap[val[fieldNameNumber]].MiddleTaskCount++
 			} else {
 				statMap[val[fieldNameNumber]].SmallTaskCount++
 			}

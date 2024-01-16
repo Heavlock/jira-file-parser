@@ -42,6 +42,7 @@ func convertDataToSlice(data map[string]*fileParser.Stat) [][]string {
 		"Количество выполненных задач с 1 поинтом",
 		"Количество выполненных задач с 5 поинтами",
 		"Количество выполненных задач с 10 поинтами",
+		"Крупные задачи",
 	})
 	for _, val := range data {
 		item := []string{
