@@ -5,6 +5,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	"os"
+	"strings"
 )
 
 func WriteToCSV(data map[string]*fileParser.Stat, filename string) error {
@@ -52,6 +53,7 @@ func convertDataToSlice(data map[string]*fileParser.Stat) [][]string {
 			fmt.Sprintf("%d", val.SmallTaskCount),
 			fmt.Sprintf("%d", val.MiddleTaskCount),
 			fmt.Sprintf("%d", val.BigTaskCount),
+			fmt.Sprintf("%s", strings.Join(val.TaskTitles[:], "\n===================\n")),
 		}
 		sliceData = append(sliceData, item)
 	}

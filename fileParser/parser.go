@@ -22,9 +22,10 @@ type Stat struct {
 	TaskCountComplete int
 	PointsCount       float64
 	BagsCount         int
-	SmallTaskCount    int //story point 1
-	MiddleTaskCount   int //story point 5
-	BigTaskCount      int //story point 10
+	SmallTaskCount    int      //story point 1
+	MiddleTaskCount   int      //story point 5
+	BigTaskCount      int      //story point 10
+	TaskTitles        []string //заголовки задач, планируем собирать не все, а наиболее значимые
 }
 
 // empTypes
@@ -201,6 +202,7 @@ func collectStat(res *result, employeeType string, statMap map[string]*Stat) {
 				statMap[val[fieldNameNumber]].MiddleTaskCount++
 			} else if storyPoints >= 10 {
 				statMap[val[fieldNameNumber]].BigTaskCount++
+				statMap[val[fieldNameNumber]].TaskTitles = append(statMap[val[fieldNameNumber]].TaskTitles, val[taskTitleFieldNumber])
 			} else {
 				statMap[val[fieldNameNumber]].SmallTaskCount++
 			}
